@@ -35,6 +35,9 @@ public class JMeterInfluxDBBackendListenerClient extends AbstractBackendListener
     private static final String KEY_RECORD_SUB_SAMPLES = "RecordSubSamples";
     private static final String KEY_TAGS_LISTING = "OptionalTags";
     private static final String DEFAULT_RESPONSE_DATA = "NULL";
+    private static final String DEFAULT_SAMPLER_DATA = "NULL";
+    private static final String DEFAULT_REQ_HEADER = "NULL";
+    private static final String DEFAULT_RES_HEADER = "NULL";
     private static final String DEFAULT_ENCODING = "UTF-8";
 
     /* Constants */
@@ -278,9 +281,20 @@ public class JMeterInfluxDBBackendListenerClient extends AbstractBackendListener
                         .addField(RequestMeasurement.Fields.ASSERTION_MSG, addAssertionResults(sampleResult.getAssertionResults()));
 
                 if (!sampleResult.isSuccessful()) {
+
                     if (StringUtils.isEmpty(sampleResult.getResponseDataAsString())) {
                         sampleResult.setResponseData(DEFAULT_RESPONSE_DATA, DEFAULT_ENCODING);
                     }
+                    if (StringUtils.isEmpty(sampleResult.getRequestHeaders())) {
+                        sampleResult.setRequestHeaders(DEFAULT_REQ_HEADER);
+                    }
+                    if (StringUtils.isEmpty(sampleResult.getResponseHeaders())) {
+                        sampleResult.setResponseHeaders(DEFAULT_RES_HEADER);
+                    }
+                    if (StringUtils.isEmpty(sampleResult.getSamplerData())) {
+                        sampleResult.setSamplerData(DEFAULT_SAMPLER_DATA);
+                    }
+
                     point.addField(RequestMeasurement.Fields.REQ_HEADER, sampleResult.getRequestHeaders())
                             .addField(RequestMeasurement.Fields.RES_HEADER, sampleResult.getResponseHeaders())
                             .addField(RequestMeasurement.Fields.REQ_PAYLOAD, sampleResult.getSamplerData())
