@@ -1,4 +1,4 @@
-package com.jmeter.influxdb.config;
+package com.github.venkatesan255.jmeter.influxdb.config;
 
 /* Constants (Tag, Field, Measurement) names for the measurement that denotes start and end points of a load test. */
 

@@ -1,9 +1,9 @@
-package com.jmeter.influxdb.client;
+package com.github.venkatesan255.jmeter.influxdb.client;
 
-import com.jmeter.influxdb.config.InfluxDBConfig;
-import com.jmeter.influxdb.config.RequestMeasurement;
-import com.jmeter.influxdb.config.TestStartEndMeasurement;
-import com.jmeter.influxdb.config.VirtualUsersMeasurement;
+import com.github.venkatesan255.jmeter.influxdb.config.InfluxDBConfig;
+import com.github.venkatesan255.jmeter.influxdb.config.RequestMeasurement;
+import com.github.venkatesan255.jmeter.influxdb.config.TestStartEndMeasurement;
+import com.github.venkatesan255.jmeter.influxdb.config.VirtualUsersMeasurement;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jmeter.assertions.AssertionResult;
 import org.apache.jmeter.config.Arguments;
@@ -38,7 +38,7 @@ public class JMeterInfluxDBBackendListenerClient extends AbstractBackendListener
     private static final String DEFAULT_SAMPLER_DATA = "NULL";
     private static final String DEFAULT_REQ_HEADER = "NULL";
     private static final String DEFAULT_RES_HEADER = "NULL";
-    private static final String DEFAULT_ENCODING = "UTF-8";
+
 
     /* Constants */
 
@@ -52,12 +52,8 @@ public class JMeterInfluxDBBackendListenerClient extends AbstractBackendListener
     private String testName;
     private String runId;
     private String nodeName;
-    private String samplersList = "";
     private String regexForSamplerList;
     private Set<String> samplersToFilter;
-    private SampleResult[] subResults;
-    private AssertionResult[] assertionResult;
-    private boolean subSample = false;
 
     /*
      * for storing optionalTags to InfluxDB. Each tag entry is a key value par [TAG_KEY] = [TAG_VALUE]
@@ -115,7 +111,7 @@ public class JMeterInfluxDBBackendListenerClient extends AbstractBackendListener
 
     /* Parses list of samplers. */
     private void parseSamplers(BackendListenerContext context) {
-        samplersList = context.getParameter(KEY_SAMPLERS_LIST, "");
+        String samplersList = context.getParameter(KEY_SAMPLERS_LIST, "");
         samplersToFilter = new HashSet<String>();
         if (context.getBooleanParameter(KEY_USE_REGEX_FOR_SAMPLER_LIST, false)) {
             regexForSamplerList = samplersList;
@@ -199,14 +195,18 @@ public class JMeterInfluxDBBackendListenerClient extends AbstractBackendListener
 
     }
 
+
+
+
+
     /* Processes sampler results. */
     public void handleSampleResults(List<SampleResult> sampleResults, BackendListenerContext context) {
 
-        String responseMsg = "";
+
         String reqHeader = "";
         String resHeader = "";
+        String responseMsg = "";
         StringBuilder resData = new StringBuilder();
-        //byte[] resDataBytes = null;
         String reqPayload = "";
 
         /* Gather all the listeners */
@@ -221,27 +221,23 @@ public class JMeterInfluxDBBackendListenerClient extends AbstractBackendListener
             }
         }
 
-        /* Get user metrics of each sampleResult from Jmeter */
         for (SampleResult sampleResult : allSampleResults) {
+            SampleResult[] transactionSubResults = sampleResult.getSubResults();
 
-            subResults = sampleResult.getSubResults();
+            AssertionResult[] assertionResults;
 
-            /* update the transaction controller sampler with sub sampler error */
-            if (StringUtils.isEmpty(sampleResult.getSamplerData())) {
+            /* check if the sampler has any sub results. if it has, it means it is a transaction controller. otherwise get user metrics as it is */
 
-                if (subResults.length > 0) {
-                    for (SampleResult subResult : subResults) {
-                        subSample = true;
-                        if (!subResult.isSuccessful()) {
-                            assertionResult = subResult.getAssertionResults();
-                            updateSampleResponseMessage(subResult, assertionResult);
-                            responseMsg += subResult.getResponseMessage();
-                            reqHeader += subResult.getRequestHeaders();
-                            resHeader += subResult.getResponseHeaders();
-                            reqPayload += subResult.getSamplerData();
-                            resData.append(subResult.getResponseDataAsString());
-                            //resDataBytes = subResult.getResponseData();
-                        }
+            if (transactionSubResults.length > 0) {
+                for (SampleResult subResult : transactionSubResults) {
+                    if(!subResult.isSuccessful()) {
+                        assertionResults = subResult.getAssertionResults();
+                        updateSampleResponseMessage(subResult,assertionResults);
+                        responseMsg = subResult.getResponseMessage();
+                        reqHeader = subResult.getRequestHeaders();
+                        resHeader = subResult.getResponseHeaders();
+                        reqPayload = subResult.getSamplerData();
+                        resData.append(subResult.getResponseDataAsString());
                     }
                 }
 
@@ -249,15 +245,13 @@ public class JMeterInfluxDBBackendListenerClient extends AbstractBackendListener
                 sampleResult.setRequestHeaders(reqHeader);
                 sampleResult.setResponseHeaders(resHeader);
                 sampleResult.setSamplerData(reqPayload);
-                sampleResult.setResponseData(String.valueOf(resData), DEFAULT_ENCODING);
-                //sampleResult.setResponseData(resDataBytes);
-
-
-            } else if (!StringUtils.isEmpty(sampleResult.getSamplerData())) {
-                AssertionResult[] assertionResult = sampleResult.getAssertionResults();
-                updateSampleResponseMessage(sampleResult, assertionResult);
+                sampleResult.setResponseData(String.valueOf(resData),SampleResult.DEFAULT_HTTP_ENCODING);
 
             }
+
+
+
+
 
             getUserMetrics().add(sampleResult);
 
@@ -278,12 +272,13 @@ public class JMeterInfluxDBBackendListenerClient extends AbstractBackendListener
                         .addField(RequestMeasurement.Fields.RESPONSE_TIME, sampleResult.getTime())
                         .addField(RequestMeasurement.Fields.RESPONSE_MSG, sampleResult.getResponseMessage())
                         .addField(RequestMeasurement.Fields.RESPONSE_CODE, sampleResult.getResponseCode())
-                        .addField(RequestMeasurement.Fields.ASSERTION_MSG, addAssertionResults(sampleResult.getAssertionResults()));
+                        ;
+
 
                 if (!sampleResult.isSuccessful()) {
 
                     if (StringUtils.isEmpty(sampleResult.getResponseDataAsString())) {
-                        sampleResult.setResponseData(DEFAULT_RESPONSE_DATA, DEFAULT_ENCODING);
+                        sampleResult.setResponseData(DEFAULT_RESPONSE_DATA,  SampleResult.DEFAULT_HTTP_ENCODING);
                     }
                     if (StringUtils.isEmpty(sampleResult.getRequestHeaders())) {
                         sampleResult.setRequestHeaders(DEFAULT_REQ_HEADER);
@@ -303,10 +298,19 @@ public class JMeterInfluxDBBackendListenerClient extends AbstractBackendListener
 
                 addOptionalTagsToPoint(point, tags);
 
-                influxDB.write(influxDBConfig.getInfluxDatabase(), influxDBConfig.getInfluxRetentionPolicy(), point.build());
+                try {
+                    influxDB.write(influxDBConfig.getInfluxDatabase(), influxDBConfig.getInfluxRetentionPolicy(), point.build());
+
+                } catch (Exception e ) {
+                    LOGGER.info("error in writing data to influxDB " + e);
+                }
+
             }
+
         }
+
     }
+
 
     private String addAssertionResults(AssertionResult[] assertionResults) {
         StringBuilder failureMsg = new StringBuilder();
@@ -321,12 +325,19 @@ public class JMeterInfluxDBBackendListenerClient extends AbstractBackendListener
     }
 
     private void updateSampleResponseMessage(SampleResult sampleResult, AssertionResult[] assertions) {
-        sampleResult.setResponseMessage(
-                "Response message: " + sampleResult.getResponseMessage() + ";"
-                        + "\rStatus code: " + sampleResult.getResponseCode() + ";"
-                        + "\rNumber of failed assertions: " + assertions.length + "\r"
-                        + generateAssertionTrace(assertions)
-        );
+
+        String  responseMsgTemp = "";
+
+        responseMsgTemp += sampleResult.getResponseMessage() ;
+
+        if(assertions.length > 0) {
+            responseMsgTemp += "; \rNumber of failed assertions: " + assertions.length + "\r"
+                    + generateAssertionTrace(assertions);
+        }
+
+        sampleResult.setResponseMessage(responseMsgTemp);
+
+
     }
 
     private String generateAssertionTrace(AssertionResult[] assertions) {

@@ -1,4 +1,4 @@
-package com.jmeter.influxdb.config;
+package com.github.venkatesan255.jmeter.influxdb.config;
 
 import org.apache.jmeter.visualizers.backend.BackendListenerContext;
 

@@ -1,4 +1,4 @@
-package com.jmeter.influxdb.config;
+package com.github.venkatesan255.jmeter.influxdb.config;
 
 /* Constants (Tag, Field, Measurement) names for the requests measurement. */
 
@@ -20,7 +20,6 @@ public interface RequestMeasurement {
         String NODE_NAME = "nodeName";
         String RESPONSE_MSG = "responseMsg";
         String RESPONSE_CODE = "responseCode";
-        String ASSERTION_MSG = "assertionMsg";
         String REQ_HEADER = "requestHeader";
         String RES_HEADER = "responseHeader";
         String REQ_PAYLOAD = "reqPayload";
