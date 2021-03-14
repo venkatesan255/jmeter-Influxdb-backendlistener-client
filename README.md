@@ -36,8 +36,20 @@ Feel free to contribute by branching and making pull requests, or simply by sugg
 ### Packaging and testing your newly added code
 Execute below mvn command. Make sure JAVA_HOME is set properly
 ```
-mvn clean install -Dgpg.skip=true
+mvn clean package
 ```
 Move the resulting JAR to your `JMETER_HOME/lib/ext`.
 
- 
+
+## Screenshots
+### Configuration
+
+![image](https://user-images.githubusercontent.com/53915098/111076591-cbb55280-84e4-11eb-81ee-5366411975f5.png)
+
+### Sample Grafana dashboard
+
+![image](https://user-images.githubusercontent.com/53915098/111076955-767a4080-84e6-11eb-87f3-3434eb686e7b.png)
+
+![image](https://user-images.githubusercontent.com/53915098/111076986-a295c180-84e6-11eb-8183-28c518344cad.png)
+
+![image](https://user-images.githubusercontent.com/53915098/111077003-b6412800-84e6-11eb-9a7d-cd3407ce2acd.png)
