@@ -19,7 +19,17 @@ JMeter InfluxDB Backend Listener is a JMeter plugin enabling you to send test re
   
 * Continuous Integration support
   * For CI CD, users can track their load test through run id 
-  
+
+### Maven
+```xml
+<dependency>
+  <groupId>com.github.venkatesan255</groupId>
+  <artifactId>JmeterInfluxDBBackendListenerClient</artifactId>
+  <version>1.2</version>
+</dependency>
+```
+
+
 ## Contributing
 Feel free to contribute by branching and making pull requests, or simply by suggesting ideas through the "Issues" tab.
 
@@ -31,11 +41,3 @@ mvn clean install -Dgpg.skip=true
 Move the resulting JAR to your `JMETER_HOME/lib/ext`.
 
  
-### Maven
-```xml
-<dependency>
-  <groupId>com.github.venkatesan255</groupId>
-  <artifactId>JmeterInfluxDBBackendListenerClient</artifactId>
-  <version>1.2</version>
-</dependency>
-```
