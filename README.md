@@ -42,6 +42,12 @@ Move the resulting JAR to your `JMETER_HOME/lib/ext`.
 
 
 ## Screenshots
+
+
+Sample Grafana dashboard  
+https://grafana.com/grafana/dashboards/14069
+
+
 ### Configuration
 
 ![image](https://user-images.githubusercontent.com/53915098/111076591-cbb55280-84e4-11eb-81ee-5366411975f5.png)
@@ -53,3 +59,4 @@ Move the resulting JAR to your `JMETER_HOME/lib/ext`.
 ![image](https://user-images.githubusercontent.com/53915098/111076986-a295c180-84e6-11eb-8183-28c518344cad.png)
 
 ![image](https://user-images.githubusercontent.com/53915098/111077003-b6412800-84e6-11eb-9a7d-cd3407ce2acd.png)
+
