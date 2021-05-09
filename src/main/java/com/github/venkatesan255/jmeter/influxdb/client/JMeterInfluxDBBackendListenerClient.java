@@ -254,57 +254,56 @@ public class JMeterInfluxDBBackendListenerClient extends AbstractBackendListener
 
 
             getUserMetrics().add(sampleResult);
+            try {
 
-            if (
-                    (null != regexForSamplerList && sampleResult.getSampleLabel().matches(regexForSamplerList)) ||
-                            samplersToFilter.contains(sampleResult.getSampleLabel())
-            ) {
+                if (
+                        (null != regexForSamplerList && sampleResult.getSampleLabel().matches(regexForSamplerList)) ||
+                                samplersToFilter.contains(sampleResult.getSampleLabel())
+                ) {
 
-                Map<String, String> tags = processOptionalTags(tagsListing);
-                Point.Builder point = Point.measurement(RequestMeasurement.MEASUREMENT_NAME)
-                        .time(System.currentTimeMillis() * ONE_MS_IN_NANOSECONDS + getUniqueNumberForTheSamplerThread(), TimeUnit.NANOSECONDS)
-                        .tag(RequestMeasurement.Tags.RUN_ID, runId)
-                        .tag(RequestMeasurement.Tags.TEST_NAME, testName)
-                        .tag(RequestMeasurement.Tags.REQUEST_NAME, sampleResult.getSampleLabel())
-                        .addField(RequestMeasurement.Fields.THREAD_NAME, sampleResult.getThreadName())
-                        .addField(RequestMeasurement.Fields.NODE_NAME, nodeName)
-                        .addField(RequestMeasurement.Fields.ERROR_COUNT, sampleResult.getErrorCount())
-                        .addField(RequestMeasurement.Fields.RESPONSE_TIME, sampleResult.getTime())
-                        .addField(RequestMeasurement.Fields.RESPONSE_MSG, sampleResult.getResponseMessage())
-                        .addField(RequestMeasurement.Fields.RESPONSE_CODE, sampleResult.getResponseCode())
-                        ;
+                    Map<String, String> tags = processOptionalTags(tagsListing);
+                    Point.Builder point = Point.measurement(RequestMeasurement.MEASUREMENT_NAME)
+                            .time(System.currentTimeMillis() * ONE_MS_IN_NANOSECONDS + getUniqueNumberForTheSamplerThread(), TimeUnit.NANOSECONDS)
+                            .tag(RequestMeasurement.Tags.RUN_ID, runId)
+                            .tag(RequestMeasurement.Tags.TEST_NAME, testName)
+                            .tag(RequestMeasurement.Tags.REQUEST_NAME, sampleResult.getSampleLabel())
+                            .addField(RequestMeasurement.Fields.THREAD_NAME, sampleResult.getThreadName())
+                            .addField(RequestMeasurement.Fields.NODE_NAME, nodeName)
+                            .addField(RequestMeasurement.Fields.ERROR_COUNT, sampleResult.getErrorCount())
+                            .addField(RequestMeasurement.Fields.RESPONSE_TIME, sampleResult.getTime())
+                            .addField(RequestMeasurement.Fields.RESPONSE_MSG, sampleResult.getResponseMessage())
+                            .addField(RequestMeasurement.Fields.RESPONSE_CODE, sampleResult.getResponseCode());
 
 
-                if (!sampleResult.isSuccessful()) {
+                    if (!sampleResult.isSuccessful()) {
 
-                    if (StringUtils.isEmpty(sampleResult.getResponseDataAsString())) {
-                        sampleResult.setResponseData(DEFAULT_RESPONSE_DATA,  SampleResult.DEFAULT_HTTP_ENCODING);
+                        if (StringUtils.isEmpty(sampleResult.getResponseDataAsString())) {
+                            sampleResult.setResponseData(DEFAULT_RESPONSE_DATA, SampleResult.DEFAULT_HTTP_ENCODING);
+                        }
+                        if (StringUtils.isEmpty(sampleResult.getRequestHeaders())) {
+                            sampleResult.setRequestHeaders(DEFAULT_REQ_HEADER);
+                        }
+                        if (StringUtils.isEmpty(sampleResult.getResponseHeaders())) {
+                            sampleResult.setResponseHeaders(DEFAULT_RES_HEADER);
+                        }
+                        if (StringUtils.isEmpty(sampleResult.getSamplerData())) {
+                            sampleResult.setSamplerData(DEFAULT_SAMPLER_DATA);
+                        }
+
+                        point.addField(RequestMeasurement.Fields.REQ_HEADER, sampleResult.getRequestHeaders())
+                                .addField(RequestMeasurement.Fields.RES_HEADER, sampleResult.getResponseHeaders())
+                                .addField(RequestMeasurement.Fields.REQ_PAYLOAD, sampleResult.getSamplerData())
+                                .addField(RequestMeasurement.Fields.RES_DATA, sampleResult.getResponseDataAsString());
                     }
-                    if (StringUtils.isEmpty(sampleResult.getRequestHeaders())) {
-                        sampleResult.setRequestHeaders(DEFAULT_REQ_HEADER);
-                    }
-                    if (StringUtils.isEmpty(sampleResult.getResponseHeaders())) {
-                        sampleResult.setResponseHeaders(DEFAULT_RES_HEADER);
-                    }
-                    if (StringUtils.isEmpty(sampleResult.getSamplerData())) {
-                        sampleResult.setSamplerData(DEFAULT_SAMPLER_DATA);
-                    }
 
-                    point.addField(RequestMeasurement.Fields.REQ_HEADER, sampleResult.getRequestHeaders())
-                            .addField(RequestMeasurement.Fields.RES_HEADER, sampleResult.getResponseHeaders())
-                            .addField(RequestMeasurement.Fields.REQ_PAYLOAD, sampleResult.getSamplerData())
-                            .addField(RequestMeasurement.Fields.RES_DATA, sampleResult.getResponseDataAsString());
-                }
+                    addOptionalTagsToPoint(point, tags);
 
-                addOptionalTagsToPoint(point, tags);
-
-                try {
                     influxDB.write(influxDBConfig.getInfluxDatabase(), influxDBConfig.getInfluxRetentionPolicy(), point.build());
 
-                } catch (Exception e ) {
-                    LOGGER.info("error in writing data to influxDB " + e);
                 }
 
+            }catch (Exception e ) {
+                    LOGGER.info("error in writing data to influxDB " + e);
             }
 
         }

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/jmeter-Influxdb-backendlistener-client.iml" filepath="$PROJECT_DIR$/.idea/jmeter-Influxdb-backendlistener-client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/JmeterInfluxDBBackendListenerClient.iml" filepath="$PROJECT_DIR$/JmeterInfluxDBBackendListenerClient.iml" />
     </modules>
   </component>
 </project>
