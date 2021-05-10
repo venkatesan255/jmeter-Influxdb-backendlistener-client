@@ -25,7 +25,7 @@ JMeter InfluxDB Backend Listener is a JMeter plugin enabling you to send test re
 <dependency>
   <groupId>com.github.venkatesan255</groupId>
   <artifactId>JmeterInfluxDBBackendListenerClient</artifactId>
-  <version>1.2</version>
+  <version>1.3</version>
 </dependency>
 ```
 
